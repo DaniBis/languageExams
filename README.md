@@ -59,6 +59,22 @@ This comprehensive document includes:
 - CTAs and navigation text
 - Warm, friendly tone suitable for all audiences
 
+### Design System
+For complete design specifications and component guidelines, see:
+
+**[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**
+
+This detailed design blueprint includes:
+- Color palette (hex codes) and semantic colors
+- Typography system (Poppins + Inter)
+- Button styles and interactive states
+- Layout spacing and grid system
+- Complete component specifications (Navbar, Footer, Cards, Forms, etc.)
+- Mobile responsiveness rules
+- Design principles and accessibility guidelines
+- Tailwind CSS configuration
+- Next.js implementation guidelines
+
 ## 🎨 Quick Brand Reference
 
 - **Colors:** White background, Soft Blue (#6BA3D4), Pastel Yellow (#FFE699)
