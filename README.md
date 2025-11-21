@@ -19,9 +19,10 @@ Our services are designed for:
 - Chinese students preparing for IELTS, Cambridge, or general English improvement
 - Teens, university students, and adults seeking to advance their English skills
 
-## 📖 Brand Identity
+## 📖 Documentation
 
-For complete brand guidelines, design principles, and communication standards, please see:
+### Brand Identity
+For complete brand guidelines, design principles, and communication standards, see:
 
 **[BRAND_IDENTITY.md](BRAND_IDENTITY.md)**
 
@@ -33,6 +34,18 @@ This comprehensive guide includes:
 - Core services overview
 - Visual identity (colors, fonts, design)
 - Brand personality traits
+
+### Website Structure
+For complete sitemap and page-by-page structure specifications, see:
+
+**[SITEMAP.md](SITEMAP.md)**
+
+This detailed guide includes:
+- Complete navigation structure (10 pages)
+- Section-by-section breakdown for each page
+- UX and conversion optimization notes
+- Content requirements and goals
+- Design guidelines and technical requirements
 
 ## 🎨 Quick Brand Reference
 
