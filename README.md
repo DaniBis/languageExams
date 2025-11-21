@@ -119,6 +119,24 @@ Full Next.js implementation for the `/book` route including:
 - Responsive design and accessibility features
 - SEO optimized with proper metadata
 
+### Vercel Deployment Guide
+
+**[VERCEL_DEPLOYMENT_GUIDE.md](VERCEL_DEPLOYMENT_GUIDE.md)** - Complete Vercel deployment guide
+
+Comprehensive, beginner-friendly guide for deploying the website on Vercel:
+- Creating and configuring GitHub repository
+- Setting up Vercel account
+- Connecting GitHub to Vercel
+- Deploying the Next.js project
+- Configuring environment variables
+- Connecting custom domain
+- DNS configuration instructions
+- SSL certificate setup
+- Troubleshooting common deployment errors
+- Continuous deployment workflow
+- Best practices and optimization tips
+- Complete deployment checklist
+
 ## 🎨 Quick Brand Reference
 
 - **Colors:** White background, Soft Blue (#6BA3D4), Pastel Yellow (#FFE699)
