@@ -1,4 +1,8 @@
 import { Hero } from '@/components/sections/hero'
+import { Services } from '@/components/sections/services'
+import { WhyChoose } from '@/components/sections/why-choose'
+import { Testimonials } from '@/components/sections/testimonials'
+import { HowItWorks } from '@/components/sections/how-it-works'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -6,6 +10,10 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <Services />
+      <WhyChoose />
+      <Testimonials />
+      <HowItWorks />
 
       {/* Final CTA */}
       <section className="bg-soft-blue py-16 md:py-20">
