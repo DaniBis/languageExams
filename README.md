@@ -92,6 +92,20 @@ This comprehensive implementation guide includes:
 - Testing checklist
 - Troubleshooting guide
 
+### Additional Page Implementations
+
+**[PAY_PAGE_CODE.md](PAY_PAGE_CODE.md)** - Complete Pay via Revolut page
+
+Full Next.js implementation for the `/pay` route including:
+- Step-by-step payment instructions (5 clear steps)
+- Prominent Revolut payment button with link
+- QR code placeholder component
+- Information for Chinese and Romanian students
+- Troubleshooting FAQ section
+- Warm, friendly tone matching brand voice
+- Full TypeScript code ready to copy-paste
+- Responsive design and accessibility features
+
 ## 🎨 Quick Brand Reference
 
 - **Colors:** White background, Soft Blue (#6BA3D4), Pastel Yellow (#FFE699)
