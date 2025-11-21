@@ -1,1 +1,14 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/about/page": "app/about/page.js",
+  "/api/contact/route": "app/api/contact/route.js",
+  "/book/page": "app/book/page.js",
+  "/cambridge/page": "app/cambridge/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/ielts/page": "app/ielts/page.js",
+  "/general-english/page": "app/general-english/page.js",
+  "/page": "app/page.js",
+  "/pay-revolut/page": "app/pay-revolut/page.js",
+  "/prices/page": "app/prices/page.js",
+  "/reviews/page": "app/reviews/page.js"
+}
