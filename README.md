@@ -47,6 +47,18 @@ This detailed guide includes:
 - Content requirements and goals
 - Design guidelines and technical requirements
 
+### Website Copy
+For all website copy and content, see:
+
+**[WEBSITE_COPY.md](WEBSITE_COPY.md)**
+
+This comprehensive document includes:
+- Complete copy for all 10 pages
+- Headlines, subheadlines, and body text
+- Service descriptions and testimonials
+- CTAs and navigation text
+- Warm, friendly tone suitable for all audiences
+
 ## 🎨 Quick Brand Reference
 
 - **Colors:** White background, Soft Blue (#6BA3D4), Pastel Yellow (#FFE699)
