@@ -269,12 +269,13 @@ Daniel [Last Name]
 English Language Tutor
 English with Daniel
 
-📧 [email@example.com]
-📱 [+1-XXX-XXX-XXXX]
-🌐 [www.englishwithdaniel.com]
+📧 contact@englishwithdaniel.com
+📱 +1 (555) 123-4567
+🌐 www.englishwithdaniel.com
 
 "Your Path to English Fluency"
 ```
+*Note: Template - replace with actual contact information*
 
 ---
 
@@ -336,7 +337,8 @@ Before publishing any content, verify:
 - [Color Palette Reference](#color-palette)
 - [Typography System](#typography)
 - [Voice & Tone Guidelines](./BRAND_IDENTITY.md#6-brand-voice--tone)
-- [Logo Assets](#) _(to be added)_
+
+*Note: Logo asset files will be added once design is finalized*
 
 ---
 

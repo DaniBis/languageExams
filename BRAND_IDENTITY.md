@@ -284,7 +284,7 @@ Master English with confidence through one-on-one instruction tailored to your g
 2. **Exam Expertise** - Specialized knowledge of major English proficiency exams
 3. **Flexible & Convenient** - Online sessions that fit your schedule
 4. **Progress Tracking** - Regular assessments and clear milestones
-5. **Experienced Teacher** - [Years of experience] helping students achieve their goals
+5. **Experienced Teacher** - Proven track record helping students achieve their goals
 6. **Results-Focused** - Practical skills you can use immediately
 
 ---
@@ -411,11 +411,12 @@ Daniel [Last Name]
 English Language Tutor
 English with Daniel
 
-📧 [email]
-📱 [phone]
-🌐 [website]
+📧 contact@englishwithdaniel.com
+📱 +1 (555) 123-4567
+🌐 www.englishwithdaniel.com
 "Your Path to English Fluency"
 ```
+*Note: Replace with actual contact information*
 
 **Email Templates:**
 - Welcome email for new students
