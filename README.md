@@ -106,6 +106,19 @@ Full Next.js implementation for the `/pay` route including:
 - Full TypeScript code ready to copy-paste
 - Responsive design and accessibility features
 
+**[BOOK_PAGE_CODE.md](BOOK_PAGE_CODE.md)** - Complete Book a Lesson page
+
+Full Next.js implementation for the `/book` route including:
+- Embedded Calendly scheduling widget
+- "How It Works" section with 3 clear steps
+- Payment reminder section with links to payment page
+- "What to Prepare" and "Good to Know" information
+- Help section with contact link
+- Customization instructions for Calendly URL
+- Full TypeScript code ready to copy-paste
+- Responsive design and accessibility features
+- SEO optimized with proper metadata
+
 ## 🎨 Quick Brand Reference
 
 - **Colors:** White background, Soft Blue (#6BA3D4), Pastel Yellow (#FFE699)
