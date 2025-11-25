@@ -179,8 +179,42 @@ export const lessonPackages: LessonPackage[] = [
   },
 ]
 
-export function formatLei(amount: number) {
-  return `${amount.toLocaleString('ro-RO')} lei`
+// Static conversion rate so English locale can show indicative EUR pricing; adjust when pricing changes.
+const RON_PER_EUR = 5
+
+const enFormatter = new Intl.NumberFormat('en-IE', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})
+
+const roFormatter = new Intl.NumberFormat('ro-RO', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})
+
+type CurrencyConfig = {
+  convert: (amountRon: number) => number
+  format: (value: number) => string
+}
+
+const currencyConfig: Record<'en' | 'ro', CurrencyConfig> = {
+  en: {
+    convert: (amountRon) => amountRon / RON_PER_EUR,
+    format: (value) => enFormatter.format(value),
+  },
+  ro: {
+    convert: (amountRon) => amountRon,
+    format: (value) => `${roFormatter.format(value)} lei`,
+  },
+}
+
+export type SupportedLocale = keyof typeof currencyConfig
+
+export function formatPrice(amountRon: number, locale: SupportedLocale) {
+  const config = currencyConfig[locale] ?? currencyConfig.en
+  return config.format(config.convert(amountRon))
 }
 
 export function getPackageById(id?: string) {

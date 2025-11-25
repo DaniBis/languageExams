@@ -2,6 +2,7 @@
 
 import { PageHeader } from '@/components/page-header'
 import { PricingCards } from '@/components/sections/pricing-cards'
+import { OnlineOnlyBanner } from '@/components/sections/online-only-banner'
 import { useLanguage, type Locale } from '@/contexts/language-context'
 
 const pricesCopy: Record<Locale, {
@@ -83,6 +84,8 @@ export default function PricesPage() {
           <div className="max-w-4xl mx-auto text-center mb-12">
             <p className="text-lg font-inter text-gray-600">{copy.intro}</p>
           </div>
+
+          <OnlineOnlyBanner className="mb-12" />
 
           <PricingCards />
         </div>

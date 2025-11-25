@@ -2,6 +2,7 @@
 
 import { PageHeader } from '@/components/page-header'
 import { useLanguage, type Locale } from '@/contexts/language-context'
+import { OnlineOnlyBanner } from '@/components/sections/online-only-banner'
 
 const cambridgeCopy: Record<Locale, {
   header: { title: string; subtitle: string }
@@ -177,6 +178,8 @@ export default function CambridgePage() {
           <div className="max-w-4xl mx-auto text-center mb-12">
             <p className="text-lg font-inter text-gray-600">{copy.intro}</p>
           </div>
+
+          <OnlineOnlyBanner className="mb-12" />
 
           <div className="mb-16">
             <h2 className="text-3xl font-poppins font-bold text-gray-900 mb-8 text-center">{copy.examsHeading}</h2>

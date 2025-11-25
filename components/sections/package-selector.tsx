@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { lessonPackages, type LessonPackage, type PackageType, formatLei } from '@/lib/packages'
+import { lessonPackages, type LessonPackage, type PackageType, formatPrice } from '@/lib/packages'
 import { Button } from '@/components/ui/button'
 import { useLanguage, type Locale } from '@/contexts/language-context'
 
@@ -24,6 +24,8 @@ const packageCopy: Record<Locale, {
   followUp: string
   groupLabel: string
   individualLabel: string
+  lessonUnit: string
+  perLessonLabel: string
   cta: (lessons: number) => string
 }> = {
   en: {
@@ -33,6 +35,8 @@ const packageCopy: Record<Locale, {
     followUp: 'After booking your slots I\'ll follow up with payment instructions for the amount above.',
     groupLabel: 'Group class (3-4 students)',
     individualLabel: '1:1 lessons',
+    lessonUnit: 'lessons',
+    perLessonLabel: ' / lesson',
     cta: (lessons) => `Choose slots (${lessons})`,
   },
   ro: {
@@ -42,6 +46,8 @@ const packageCopy: Record<Locale, {
     followUp: 'Dupa rezervare revin prin email cu detaliile de plata pentru suma afisata.',
     groupLabel: 'Curs de grup (3-4 cursanti)',
     individualLabel: 'Sedinte 1:1',
+    lessonUnit: 'sedinte',
+    perLessonLabel: ' / sedinta',
     cta: (lessons) => `Alege intervalele (${lessons})`,
   },
 }
@@ -105,9 +111,9 @@ export function PackageSelector({ initialPackageId }: PackageSelectorProps) {
                       {pkg.type === 'group' ? copy.groupLabel : copy.individualLabel}
                     </p>
                     <h4 className="text-xl font-poppins font-bold text-gray-900">{getPackageName(pkg)}</h4>
-                    <p className="text-sm text-gray-600">{pkg.lessons} lessons</p>
-                    <p className="text-lg font-poppins font-semibold text-gray-900 mt-2">{formatLei(pkg.totalPrice)}</p>
-                    <p className="text-xs text-gray-500">≈ {formatLei(pkg.totalPrice / pkg.lessons)} per lesson</p>
+                    <p className="text-sm text-gray-600">{pkg.lessons} {copy.lessonUnit}</p>
+                    <p className="text-lg font-poppins font-semibold text-gray-900 mt-2">{formatPrice(pkg.totalPrice, locale)}</p>
+                    <p className="text-xs text-gray-500">≈ {formatPrice(pkg.totalPrice / pkg.lessons, locale)}{copy.perLessonLabel}</p>
                   </button>
                 )
               })}
@@ -119,7 +125,7 @@ export function PackageSelector({ initialPackageId }: PackageSelectorProps) {
       <div className="bg-white/90 border border-gray-100 rounded-3xl p-6 shadow-sm">
         <h4 className="text-2xl font-poppins font-bold text-gray-900 mb-2">{getPackageName(selectedPackage)}</h4>
         <p className="text-gray-600 font-inter mb-2">
-          {copy.blockDescription(selectedPackage.lessons, formatLei(perLesson))}
+          {copy.blockDescription(selectedPackage.lessons, formatPrice(perLesson, locale))}
         </p>
         <p className="text-sm text-gray-500 font-inter">
           {copy.followUp}

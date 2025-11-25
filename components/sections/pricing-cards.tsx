@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { lessonPackages, type LessonPackage, type PackageType, formatLei } from '@/lib/packages'
+import { lessonPackages, type LessonPackage, type PackageType, formatPrice } from '@/lib/packages'
 import { useLanguage, type Locale } from '@/contexts/language-context'
 
 const pricingCopy: Record<Locale, {
@@ -90,8 +90,8 @@ export function PricingCards() {
                     )}
                     <h4 className="text-2xl font-poppins font-bold text-gray-900 mb-2">{localizedName}</h4>
                     <div className="text-lg font-inter text-gray-600 mb-1">{copy.lessons(pkg.lessons)}</div>
-                    <div className="text-xl font-poppins font-semibold text-soft-blue mb-1">{copy.total(formatLei(pkg.totalPrice))}</div>
-                    <div className="text-sm font-inter text-gray-500 mb-4">{copy.perLesson(formatLei(perLesson))}</div>
+                    <div className="text-xl font-poppins font-semibold text-soft-blue mb-1">{copy.total(formatPrice(pkg.totalPrice, locale))}</div>
+                    <div className="text-sm font-inter text-gray-500 mb-4">{copy.perLesson(formatPrice(perLesson, locale))}</div>
                     <ul className="space-y-2 mb-6">
                       {localizedFeatures.map((feature: string, idx: number) => (
                         <li key={idx} className="flex items-start">
