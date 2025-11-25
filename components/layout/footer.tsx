@@ -1,72 +1,130 @@
+'use client'
+
 import Link from 'next/link'
-import { Facebook, Instagram, Linkedin } from 'lucide-react'
+import { useLanguage, type Locale } from '@/contexts/language-context'
+
+interface ColumnLink {
+  label: string
+  href: string
+}
+
+interface FooterContent {
+  quickLinks: ColumnLink[]
+  services: ColumnLink[]
+  headings: {
+    quick: string
+    services: string
+    contact: string
+  }
+  contactInfo: { label: string; value: string }[]
+  copyright: string
+  tagline: string
+}
+
+const footerCopy: Record<Locale, FooterContent> = {
+  en: {
+    quickLinks: [
+      { label: 'Home', href: '/' },
+      { label: 'About Me', href: '/about' },
+      { label: 'Prices & Packages', href: '/prices' },
+      { label: 'Student Reviews', href: '/reviews' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    services: [
+      { label: 'Cambridge Preparation', href: '/cambridge' },
+      { label: 'IELTS Preparation', href: '/ielts' },
+      { label: 'General English', href: '/general-english' },
+      { label: 'Book a Lesson', href: '/book' },
+    ],
+    headings: {
+      quick: 'Quick Links',
+      services: 'Services',
+      contact: 'Contact',
+    },
+    contactInfo: [
+      { label: 'Email', value: 'bisceanudaniel@gmail.com' },
+      { label: 'WhatsApp', value: '+66 828 612 701' },
+    ],
+    copyright: '© 2025 English with Daniel. All rights reserved.',
+    tagline: 'Clear English. Confident Communication.',
+  },
+  ro: {
+    quickLinks: [
+      { label: 'Acasa', href: '/' },
+      { label: 'Despre mine', href: '/about' },
+      { label: 'Tarife si pachete', href: '/prices' },
+      { label: 'Recenzii', href: '/reviews' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    services: [
+      { label: 'Pregatire Cambridge', href: '/cambridge' },
+      { label: 'Pregatire IELTS', href: '/ielts' },
+      { label: 'Engleza generala', href: '/general-english' },
+      { label: 'Programeaza o lectie', href: '/book' },
+    ],
+    headings: {
+      quick: 'Linkuri rapide',
+      services: 'Servicii',
+      contact: 'Contact',
+    },
+    contactInfo: [
+      { label: 'Email', value: 'bisceanudaniel@gmail.com' },
+      { label: 'WhatsApp', value: '+66 828 612 701' },
+    ],
+    copyright: '© 2025 English with Daniel. Toate drepturile rezervate.',
+    tagline: 'Engleza clara. Comunicare cu incredere.',
+  },
+}
 
 export function Footer() {
+  const { locale } = useLanguage()
+  const content = footerCopy[locale]
+
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-20">
       <div className="container max-w-7xl mx-auto px-6 md:px-20 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-          {/* Column 1: Quick Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
           <div>
-            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">Quick Links</h5>
+            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">{content.headings.quick}</h5>
             <ul className="space-y-3">
-              <li><Link href="/" className="text-gray-600 hover:text-soft-blue transition-colors">Home</Link></li>
-              <li><Link href="/about" className="text-gray-600 hover:text-soft-blue transition-colors">About Me</Link></li>
-              <li><Link href="/prices" className="text-gray-600 hover:text-soft-blue transition-colors">Prices & Packages</Link></li>
-              <li><Link href="/reviews" className="text-gray-600 hover:text-soft-blue transition-colors">Student Reviews</Link></li>
-              <li><Link href="/contact" className="text-gray-600 hover:text-soft-blue transition-colors">Contact</Link></li>
+              {content.quickLinks.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-gray-600 hover:text-soft-blue transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 2: Services */}
           <div>
-            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">Services</h5>
+            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">{content.headings.services}</h5>
             <ul className="space-y-3">
-              <li><Link href="/cambridge" className="text-gray-600 hover:text-soft-blue transition-colors">Cambridge Preparation</Link></li>
-              <li><Link href="/ielts" className="text-gray-600 hover:text-soft-blue transition-colors">IELTS Preparation</Link></li>
-              <li><Link href="/general-english" className="text-gray-600 hover:text-soft-blue transition-colors">General English</Link></li>
-              <li><Link href="/book" className="text-gray-600 hover:text-soft-blue transition-colors">Book a Lesson</Link></li>
+              {content.services.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-gray-600 hover:text-soft-blue transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 3: Contact */}
           <div>
-            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">Contact</h5>
+            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">{content.headings.contact}</h5>
             <ul className="space-y-3">
-              <li className="text-gray-600">Email: daniel@englishwithdaniel.com</li>
-              <li className="text-gray-600">WhatsApp: +XX XXX XXX XXXX</li>
-              <li className="text-gray-600">Location: [City, Country]</li>
-              <li className="text-gray-600">Time Zone: CET</li>
-            </ul>
-            <div className="flex gap-4 mt-4">
-              <a href="#" className="text-gray-600 hover:text-soft-blue transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-soft-blue transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-600 hover:text-soft-blue transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Column 4: Resources */}
-          <div>
-            <h5 className="font-poppins font-semibold text-lg text-gray-800 mb-4">Resources</h5>
-            <ul className="space-y-3">
-              <li><Link href="/pay-revolut" className="text-gray-600 hover:text-soft-blue transition-colors">Pay via Revolut</Link></li>
-              <li><Link href="/contact" className="text-gray-600 hover:text-soft-blue transition-colors">FAQ</Link></li>
-              <li><a href="#" className="text-gray-600 hover:text-soft-blue transition-colors">Cancellation Policy</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-soft-blue transition-colors">Privacy Policy</a></li>
+              {content.contactInfo.map((item) => (
+                <li key={item.label} className="text-gray-600">
+                  {item.label}: {item.value}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="border-t border-gray-200 mt-12 pt-8 text-center">
-          <p className="text-sm text-gray-600">© 2025 English with Daniel. All rights reserved.</p>
-          <p className="text-base text-soft-blue mt-2 font-poppins">Clear English. Confident You.</p>
+          <p className="text-sm text-gray-600">{content.copyright}</p>
+          <p className="text-base text-soft-blue mt-2 font-poppins">{content.tagline}</p>
         </div>
       </div>
     </footer>

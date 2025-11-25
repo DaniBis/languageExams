@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sendContactEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,34 +23,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // In a production environment, you would send an email here
-    // For now, we'll just log it and return success
-    console.log('Contact form submission:', { name, email, subject, message })
-
-    // TODO: Implement email sending with nodemailer, SendGrid, or similar
-    // Example with nodemailer:
-    /*
-    const nodemailer = require('nodemailer')
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    })
-
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.CONTACT_EMAIL_TO,
-      subject: `Contact Form: ${subject}`,
-      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
-      html: `<p><strong>Name:</strong> ${name}</p>
-             <p><strong>Email:</strong> ${email}</p>
-             <p><strong>Message:</strong></p>
-             <p>${message}</p>`,
-    })
-    */
+    await sendContactEmail({ name, email, subject, message })
 
     return NextResponse.json(
       { message: 'Message sent successfully!' },

@@ -3,6 +3,7 @@ import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
+import { Providers } from './providers'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   keywords: 'English tutor, Cambridge exam, IELTS preparation, B1 B2 C1, English lessons, Romanian students, Chinese students',
   authors: [{ name: 'Daniel' }],
   openGraph: {
-    title: 'English with Daniel - Clear English. Confident You.',
+    title: 'English with Daniel - Clear English. Confident Communication.',
     description: 'Cambridge & IELTS Exam Preparation with an Experienced International Tutor',
     type: 'website',
     locale: 'en_US',
@@ -38,11 +39,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body>
-        <Navbar />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
+        <Providers>
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   )

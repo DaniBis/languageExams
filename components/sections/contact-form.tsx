@@ -1,11 +1,47 @@
-'use client'
+"use client"
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useLanguage, type Locale } from '@/contexts/language-context'
+
+const contactCopy: Record<Locale, {
+  name: string
+  email: string
+  subject: string
+  message: string
+  send: string
+  sending: string
+  success: string
+  error: string
+}> = {
+  en: {
+    name: 'Name *',
+    email: 'Email *',
+    subject: 'Subject *',
+    message: 'Message *',
+    send: 'Send Message',
+    sending: 'Sending...',
+    success: 'Message sent successfully!',
+    error: 'Failed to send message. Please try again.',
+  },
+  ro: {
+    name: 'Nume *',
+    email: 'Email *',
+    subject: 'Subiect *',
+    message: 'Mesaj *',
+    send: 'Trimite mesajul',
+    sending: 'Se trimite...',
+    success: 'Mesaj trimis cu succes!',
+    error: 'Mesajul nu a putut fi trimis. Incearca din nou.',
+  },
+}
 
 export function ContactForm() {
+  const { locale } = useLanguage()
+  const copy = contactCopy[locale]
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,13 +75,13 @@ export function ContactForm() {
       const data = await response.json()
 
       if (response.ok) {
-        setSubmitMessage('Message sent successfully!')
+        setSubmitMessage(copy.success)
         setFormData({ name: '', email: '', subject: '', message: '' })
       } else {
-        setSubmitMessage(data.error || 'Failed to send message. Please try again.')
+        setSubmitMessage(data.error || copy.error)
       }
     } catch (error) {
-      setSubmitMessage('Failed to send message. Please try again.')
+      setSubmitMessage(copy.error)
     } finally {
       setIsSubmitting(false)
     }
@@ -57,7 +93,7 @@ export function ContactForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Name *
+              {copy.name}
             </label>
             <Input
               type="text"
@@ -71,7 +107,7 @@ export function ContactForm() {
           </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email *
+              {copy.email}
             </label>
             <Input
               type="email"
@@ -87,7 +123,7 @@ export function ContactForm() {
 
         <div>
           <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-            Subject *
+            {copy.subject}
           </label>
           <Input
             type="text"
@@ -102,7 +138,7 @@ export function ContactForm() {
 
         <div>
           <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-            Message *
+            {copy.message}
           </label>
           <Textarea
             id="message"
@@ -121,13 +157,13 @@ export function ContactForm() {
             disabled={isSubmitting}
             className="px-8 py-3 bg-soft-blue hover:bg-soft-blue-dark text-white font-poppins font-medium"
           >
-            {isSubmitting ? 'Sending...' : 'Send Message'}
+            {isSubmitting ? copy.sending : copy.send}
           </Button>
         </div>
 
         {submitMessage && (
           <div className={`text-center p-4 rounded-lg ${
-            submitMessage.includes('successfully')
+            submitMessage.includes(locale === 'ro' ? 'succes' : 'successfully')
               ? 'bg-green-50 text-green-800 border border-green-200'
               : 'bg-red-50 text-red-800 border border-red-200'
           }`}>

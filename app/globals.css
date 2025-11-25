@@ -32,7 +32,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply text-foreground font-inter;
+    background: linear-gradient(135deg, #fff9f1 0%, #f2f7ff 45%, #fdf5ff 100%);
+    min-height: 100vh;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-poppins;
@@ -48,4 +50,16 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 230, 153, 0.25), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(107, 163, 212, 0.3), transparent 45%),
+    radial-gradient(circle at 60% 80%, rgba(255, 210, 235, 0.25), transparent 50%);
+  pointer-events: none;
+  z-index: -1;
 }
