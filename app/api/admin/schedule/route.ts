@@ -44,11 +44,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'add-recurring') {
-      const { weekday, startMinutes, durationMinutes, note } = body as {
+      const { weekday, startMinutes, durationMinutes, note, timezone } = body as {
         weekday?: number
         startMinutes?: number
         durationMinutes?: number
         note?: string
+        timezone?: string
       }
 
       if (
@@ -59,7 +60,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing recurring lock parameters.' }, { status: 400 })
       }
 
-      const recurringLocks = await addRecurringLock({ weekday, startMinutes, durationMinutes, note })
+      const recurringLocks = await addRecurringLock({
+        weekday,
+        startMinutes,
+        durationMinutes,
+        note,
+        timezone,
+      })
       return NextResponse.json({ success: true, recurringLocks })
     }
 

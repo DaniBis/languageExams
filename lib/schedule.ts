@@ -29,6 +29,16 @@ const kvClient = initKvClient()
 const hasKvConfig = Boolean(kvClient)
 const bookingsKvKey = process.env.SCHEDULE_KV_BOOKINGS_KEY ?? 'schedule:bookings'
 const recurringKvKey = process.env.SCHEDULE_KV_RECURRING_KEY ?? 'schedule:recurring-locks'
+const DEFAULT_LOCK_TIMEZONE = process.env.SCHEDULE_DEFAULT_LOCK_TIMEZONE ?? 'Europe/Bucharest'
+const WEEKDAY_LABEL_TO_INDEX: Record<string, number> = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+}
 
 export { SCHEDULE_SLOT_MINUTES, SCHEDULE_START_HOUR, SCHEDULE_END_HOUR, SCHEDULE_MAX_DAYS }
 
@@ -106,6 +116,31 @@ function normalizeDate(date: Date) {
   return normalized
 }
 
+function getLocalTimeParts(date: Date, timeZone: string) {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      weekday: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+    const parts = formatter.formatToParts(date)
+    const weekdayLabel = parts.find((part) => part.type === 'weekday')?.value
+    const hourValue = parts.find((part) => part.type === 'hour')?.value ?? '0'
+    const minuteValue = parts.find((part) => part.type === 'minute')?.value ?? '0'
+    const weekday =
+      typeof weekdayLabel === 'string' && WEEKDAY_LABEL_TO_INDEX[weekdayLabel] !== undefined
+        ? WEEKDAY_LABEL_TO_INDEX[weekdayLabel]
+        : date.getUTCDay()
+    const minutesSinceMidnight = Number.parseInt(hourValue, 10) * 60 + Number.parseInt(minuteValue, 10)
+    return { weekday, minutesSinceMidnight }
+  } catch {
+    const fallbackMinutes = date.getUTCHours() * 60 + date.getUTCMinutes()
+    return { weekday: date.getUTCDay(), minutesSinceMidnight: fallbackMinutes }
+  }
+}
+
 function generateSlots(startDate: Date, days: number): ScheduleSlot[] {
   const slots: ScheduleSlot[] = []
 
@@ -175,6 +210,10 @@ async function readRecurringLocks(): Promise<RecurringLock[]> {
       startMinutes: Number(entry.startMinutes),
       durationMinutes: Number(entry.durationMinutes),
       note: entry.note ? String(entry.note) : undefined,
+      timezone:
+        typeof entry.timezone === 'string' && entry.timezone.trim()
+          ? entry.timezone.trim()
+          : undefined,
     }))
     .filter((entry) => !Number.isNaN(entry.weekday) && !Number.isNaN(entry.startMinutes) && !Number.isNaN(entry.durationMinutes))
 }
@@ -187,9 +226,10 @@ async function saveRecurringLocks(locks: RecurringLock[]) {
 }
 
 function matchesRecurringLock(date: Date, lock: RecurringLock) {
-  const weekday = date.getUTCDay()
+  const timeZone = lock.timezone || DEFAULT_LOCK_TIMEZONE
+  const { weekday, minutesSinceMidnight } = getLocalTimeParts(date, timeZone)
   if (weekday !== lock.weekday) return false
-  const minutes = date.getUTCHours() * 60 + date.getUTCMinutes()
+  const minutes = minutesSinceMidnight
   return minutes >= lock.startMinutes && minutes < lock.startMinutes + lock.durationMinutes
 }
 
@@ -370,8 +410,10 @@ export async function addRecurringLock(params: {
   startMinutes: number
   durationMinutes: number
   note?: string
+  timezone?: string
 }) {
   const { weekday, startMinutes, durationMinutes, note } = params
+  const timezone = params.timezone?.trim() || DEFAULT_LOCK_TIMEZONE
 
   if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) {
     throw new Error('Weekday must be between 0 (Sunday) and 6 (Saturday).')
@@ -403,6 +445,7 @@ export async function addRecurringLock(params: {
     startMinutes,
     durationMinutes,
     note: note?.trim() || undefined,
+    timezone,
   }
 
   locks.push(newLock)

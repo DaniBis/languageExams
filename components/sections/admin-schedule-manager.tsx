@@ -242,7 +242,7 @@ export function AdminScheduleManager({
           'Content-Type': 'application/json',
           'x-admin-key': adminKey,
         },
-        body: JSON.stringify({ action: 'add-recurring', ...recurringForm }),
+        body: JSON.stringify({ action: 'add-recurring', ...recurringForm, timezone }),
       })
 
       const data = await res.json()
@@ -574,6 +574,7 @@ export function AdminScheduleManager({
                         {weekdayOptions[lock.weekday]} · {rangeLabel(lock.startMinutes, lock.durationMinutes)}
                       </p>
                       {lock.note && <p className="text-xs text-gray-600">{lock.note}</p>}
+                      {lock.timezone && <p className="text-xs text-gray-500">{lock.timezone}</p>}
                     </div>
                     <Button
                       type="button"

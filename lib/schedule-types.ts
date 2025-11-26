@@ -30,4 +30,5 @@ export interface RecurringLock {
   startMinutes: number
   durationMinutes: number
   note?: string
+  timezone?: string
 }
