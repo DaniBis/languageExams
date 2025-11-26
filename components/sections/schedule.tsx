@@ -421,9 +421,9 @@ export function ScheduleSection() {
                         const slotStart = new Date(slot.start)
                         const slotEnd = new Date(slot.end)
                         const isSelected = selectedSlots.includes(slot.id)
-                        const isBooked = slot.status === 'booked'
                         const isLocked = slot.status === 'locked'
-                        const isUnavailable = isBooked || isLocked
+                        const isBooked = slot.status === 'booked' || isLocked
+                        const isUnavailable = isBooked
 
                         return (
                           <button
@@ -434,7 +434,6 @@ export function ScheduleSection() {
                             className={cn(
                               'w-full text-left px-4 py-3 text-sm font-medium transition rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                               isBooked && 'bg-gray-100 text-gray-400 line-through cursor-not-allowed',
-                              isLocked && 'bg-amber-50 text-amber-700 cursor-not-allowed',
                               !isUnavailable && 'hover:bg-soft-blue-light/40 text-gray-700',
                               isSelected && 'bg-soft-blue text-white hover:bg-soft-blue'
                             )}
@@ -443,7 +442,6 @@ export function ScheduleSection() {
                               {formatTime(slotStart, timezone)} – {formatTime(slotEnd, timezone)}
                             </p>
                             {isBooked && <p className="text-xs">{copy.bookedTag}</p>}
-                            {isLocked && <p className="text-xs">{copy.lockedTag}</p>}
                           </button>
                         )
                       })}
