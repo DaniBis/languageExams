@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ScheduleSlot } from '@/lib/schedule'
+import type { ScheduleSlot } from '@/lib/schedule-types'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { lessonPackages, type LessonPackage } from '@/lib/packages'

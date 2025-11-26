@@ -1,51 +1,35 @@
 import { promises as fs } from 'fs'
 import path from 'path'
+import { Redis } from '@upstash/redis'
+import {
+  SCHEDULE_END_HOUR,
+  SCHEDULE_MAX_DAYS,
+  SCHEDULE_SLOT_MINUTES,
+  SCHEDULE_START_HOUR,
+} from './schedule-constants'
+import type {
+  BookingEntryType,
+  RecurringLock,
+  ScheduleSlot,
+  SlotStatus,
+  StoredBooking,
+} from './schedule-types'
 
-export type SlotStatus = 'available' | 'booked' | 'locked'
+export type { SlotStatus, ScheduleSlot, RecurringLock, StoredBooking, BookingEntryType }
 
-export interface ScheduleSlot {
-  id: string
-  start: string
-  end: string
-  status: SlotStatus
-  lockType?: 'manual' | 'recurring'
-  lockNote?: string
-  recurringLockId?: string
-}
-
-export type BookingEntryType = 'user' | 'admin-lock'
-
-export interface StoredBooking {
-  id: string
-  start: string
-  end: string
-  bookedByName: string
-  bookedByEmail: string
-  bookingType?: string
-  note?: string
-  bookedAt: string
-  entryType?: BookingEntryType
-}
-
-const SLOT_MINUTES = 30
+const SLOT_MINUTES = SCHEDULE_SLOT_MINUTES
 const DEFAULT_DAY_SPAN = 7
-const START_HOUR = 7
-const END_HOUR = 22
-const MAX_DAYS = 31
+const START_HOUR = SCHEDULE_START_HOUR
+const END_HOUR = SCHEDULE_END_HOUR
+const MAX_DAYS = SCHEDULE_MAX_DAYS
 const scheduleFile = path.join(process.cwd(), 'data', 'schedule.json')
 const recurringLocksFile = path.join(process.cwd(), 'data', 'recurring-locks.json')
+const kvClient = initKvClient()
+const hasKvConfig = Boolean(kvClient)
+const bookingsKvKey = process.env.SCHEDULE_KV_BOOKINGS_KEY ?? 'schedule:bookings'
+const recurringKvKey = process.env.SCHEDULE_KV_RECURRING_KEY ?? 'schedule:recurring-locks'
 
-export const SCHEDULE_SLOT_MINUTES = SLOT_MINUTES
-export const SCHEDULE_START_HOUR = START_HOUR
-export const SCHEDULE_END_HOUR = END_HOUR
-
-export interface RecurringLock {
-  id: string
-  weekday: number // 0 = Sunday
-  startMinutes: number
-  durationMinutes: number
-  note?: string
-}
+export { SCHEDULE_SLOT_MINUTES, SCHEDULE_START_HOUR, SCHEDULE_END_HOUR, SCHEDULE_MAX_DAYS }
 
 async function ensureFile() {
   await fs.mkdir(path.dirname(scheduleFile), { recursive: true })
@@ -62,6 +46,56 @@ async function ensureRecurringFile() {
     await fs.access(recurringLocksFile)
   } catch {
     await fs.writeFile(recurringLocksFile, '[]', 'utf8')
+  }
+}
+
+function initKvClient() {
+  const hasAnyKvEnv = Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  ) || Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+
+  if (!hasAnyKvEnv) {
+    return null
+  }
+
+  try {
+    return Redis.fromEnv()
+  } catch (error) {
+    console.error('Failed to initialize KV client. Falling back to filesystem storage.', error)
+    return null
+  }
+}
+
+function shouldSuppressKvError(error: unknown) {
+  if (typeof error !== 'object' || error === null) return false
+  const maybeDigest = (error as { digest?: unknown }).digest
+  return maybeDigest === 'DYNAMIC_SERVER_USAGE'
+}
+
+async function readFromKv<T>(key: string): Promise<T | null> {
+  if (!kvClient) return null
+  try {
+    const value = await kvClient.get<T>(key)
+    if (!value) return null
+    return value
+  } catch (error) {
+    if (!shouldSuppressKvError(error)) {
+      console.error(`KV read failed for ${key}`, error)
+    }
+    return null
+  }
+}
+
+async function writeToKv<T>(key: string, value: T): Promise<boolean> {
+  if (!kvClient) return false
+  try {
+    await kvClient.set(key, value)
+    return true
+  } catch (error) {
+    if (!shouldSuppressKvError(error)) {
+      console.error(`KV write failed for ${key}`, error)
+    }
+    return false
   }
 }
 
@@ -103,9 +137,13 @@ function isSlotRecurringLocked(date: Date, locks: RecurringLock[]) {
 }
 
 async function readBookings(): Promise<StoredBooking[]> {
-  await ensureFile()
-  const raw = await fs.readFile(scheduleFile, 'utf8')
-  const data = raw.trim() ? JSON.parse(raw) : []
+  const kvData = await readFromKv<StoredBooking[]>(bookingsKvKey)
+  const source = kvData ?? (await (async () => {
+    await ensureFile()
+    const raw = await fs.readFile(scheduleFile, 'utf8')
+    return raw.trim() ? JSON.parse(raw) : []
+  })())
+  const data = Array.isArray(source) ? source : []
   if (!Array.isArray(data)) return []
   return data.map((entry) => ({
     ...entry,
@@ -114,14 +152,20 @@ async function readBookings(): Promise<StoredBooking[]> {
 }
 
 async function saveBookings(bookings: StoredBooking[]) {
+  const savedToKv = await writeToKv(bookingsKvKey, bookings)
+  if (savedToKv) return
   await ensureFile()
   await fs.writeFile(scheduleFile, JSON.stringify(bookings, null, 2), 'utf8')
 }
 
 async function readRecurringLocks(): Promise<RecurringLock[]> {
-  await ensureRecurringFile()
-  const raw = await fs.readFile(recurringLocksFile, 'utf8')
-  const data = raw.trim() ? JSON.parse(raw) : []
+  const kvData = await readFromKv<RecurringLock[]>(recurringKvKey)
+  const source = kvData ?? (await (async () => {
+    await ensureRecurringFile()
+    const raw = await fs.readFile(recurringLocksFile, 'utf8')
+    return raw.trim() ? JSON.parse(raw) : []
+  })())
+  const data = Array.isArray(source) ? source : []
   if (!Array.isArray(data)) return []
   return data
     .map((entry) => ({
@@ -135,6 +179,8 @@ async function readRecurringLocks(): Promise<RecurringLock[]> {
 }
 
 async function saveRecurringLocks(locks: RecurringLock[]) {
+  const savedToKv = await writeToKv(recurringKvKey, locks)
+  if (savedToKv) return
   await ensureRecurringFile()
   await fs.writeFile(recurringLocksFile, JSON.stringify(locks, null, 2), 'utf8')
 }

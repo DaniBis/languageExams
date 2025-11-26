@@ -1,8 +1,8 @@
 "use client"
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import type { RecurringLock, ScheduleSlot } from '@/lib/schedule'
-import { SCHEDULE_END_HOUR, SCHEDULE_SLOT_MINUTES, SCHEDULE_START_HOUR } from '@/lib/schedule'
+import type { RecurringLock, ScheduleSlot } from '@/lib/schedule-types'
+import { SCHEDULE_END_HOUR, SCHEDULE_SLOT_MINUTES, SCHEDULE_START_HOUR } from '@/lib/schedule-constants'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
