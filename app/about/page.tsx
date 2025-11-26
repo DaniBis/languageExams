@@ -1,6 +1,5 @@
 "use client"
 
-import Image from 'next/image'
 import { PageHeader } from '@/components/page-header'
 import { useLanguage, type Locale } from '@/contexts/language-context'
 
@@ -20,7 +19,7 @@ const aboutCopy: Record<Locale, {
   proofs: {
     heading: string
     body: string
-    items: { title: string; badge: string; description: string; image: string }[]
+    items: { title: string; badge: string; description: string }[]
   }
   approach: {
     heading: string
@@ -93,19 +92,16 @@ const aboutCopy: Record<Locale, {
           title: 'IELTS Academic Result',
           badge: 'Band 7.5 overall',
           description: 'Listening 8.0, Reading 7.5, Writing 7.0, Speaking 7.5 – achieved in only 12 weeks of focused lessons.',
-          image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80',
         },
         {
           title: 'Cambridge FCE Certificate',
           badge: 'Grade B – 176',
           description: 'Student from Bucharest who passed B2 First with distinction after targeting writing and speaking.',
-          image: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80',
         },
         {
           title: 'Cambridge CAE Progress',
           badge: 'C1 Advanced pass',
           description: 'Weekly strategy sessions + mock exams pushed this working professional over the finish line.',
-          image: 'https://images.unsplash.com/photo-1460518451285-97b6aa326961?auto=format&fit=crop&w=900&q=80',
         },
       ],
     },
@@ -213,19 +209,16 @@ const aboutCopy: Record<Locale, {
           title: 'Rezultat IELTS Academic',
           badge: 'Band 7.5 overall',
           description: 'Listening 8.0, Reading 7.5, Writing 7.0, Speaking 7.5 – progres in 12 saptamani.',
-          image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80',
         },
         {
           title: 'Certificat Cambridge FCE',
           badge: 'Nota B – 176',
           description: 'Eleva din Bucuresti care a trecut B2 First dupa focus pe writing si speaking.',
-          image: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80',
         },
         {
           title: 'Progres Cambridge CAE',
           badge: 'C1 Advanced promovat',
           description: 'Sedinte saptamanale + mock tests au ajutat un profesionist sa treaca de pragul dorit.',
-          image: 'https://images.unsplash.com/photo-1460518451285-97b6aa326961?auto=format&fit=crop&w=900&q=80',
         },
       ],
     },
@@ -349,17 +342,14 @@ export default function AboutPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {copy.proofs.items.map((item) => (
-              <div key={item.title} className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-                <div className="relative h-56 w-full">
-                  <Image src={item.image} alt={item.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <span className="text-sm font-semibold text-soft-blue mb-2 inline-flex items-center gap-2">
-                    <span className="inline-block h-2 w-2 rounded-full bg-soft-blue" />
-                    {item.badge}
-                  </span>
+              <div key={item.title} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col gap-4">
+                <span className="text-sm font-semibold text-soft-blue inline-flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-soft-blue" />
+                  {item.badge}
+                </span>
+                <div>
                   <h3 className="text-xl font-poppins font-semibold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-600 font-inter leading-relaxed flex-1">{item.description}</p>
+                  <p className="text-gray-600 font-inter leading-relaxed">{item.description}</p>
                 </div>
               </div>
             ))}
