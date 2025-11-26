@@ -1,5 +1,5 @@
 import { AdminScheduleManager } from '@/components/sections/admin-schedule-manager'
-import { getBookings, listSlots, type StoredBooking } from '@/lib/schedule'
+import { getBookings, listSlots, listRecurringLocks, type StoredBooking } from '@/lib/schedule'
 
 interface PageProps {
   searchParams?: { [key: string]: string | string[] | undefined }
@@ -36,6 +36,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
   const initialStartDate = today.toISOString().split('T')[0]
   const defaultDays = 14
   const initialSlots = await listSlots({ startDate: today.toISOString(), days: defaultDays })
+  const recurringLocks = await listRecurringLocks()
   const safeKey = providedKey || adminKey
 
   return (
@@ -53,6 +54,7 @@ export default async function AdminSchedulePage({ searchParams }: PageProps) {
         initialSlots={initialSlots}
         initialStartDate={initialStartDate}
         initialDays={defaultDays}
+        initialRecurringLocks={recurringLocks}
       />
 
       <div className="space-y-4">

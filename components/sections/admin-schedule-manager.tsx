@@ -1,7 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ScheduleSlot } from '@/lib/schedule'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import type { RecurringLock, ScheduleSlot } from '@/lib/schedule'
+import { SCHEDULE_END_HOUR, SCHEDULE_SLOT_MINUTES, SCHEDULE_START_HOUR } from '@/lib/schedule'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -10,6 +11,7 @@ interface AdminScheduleManagerProps {
   initialSlots: ScheduleSlot[]
   initialStartDate: string
   initialDays: number
+  initialRecurringLocks: RecurringLock[]
 }
 
 const timezoneOptions = [
@@ -23,6 +25,13 @@ const timezoneOptions = [
 
 const dayOptions = [7, 14, 21, 28, 31]
 const adminLocale = 'en-GB'
+const weekdayOptions = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const dayStartMinutes = SCHEDULE_START_HOUR * 60
+const dayEndMinutes = SCHEDULE_END_HOUR * 60
+const timeOptions = Array.from({ length: ((dayEndMinutes - dayStartMinutes) / SCHEDULE_SLOT_MINUTES) }, (_, index) =>
+  dayStartMinutes + index * SCHEDULE_SLOT_MINUTES
+)
+const durationOptions = [SCHEDULE_SLOT_MINUTES, 60, 90, 120, 150, 180]
 
 function formatDateLabel(date: Date) {
   return new Intl.DateTimeFormat(adminLocale, {
@@ -41,7 +50,24 @@ function formatTime(date: Date, timezone: string) {
   }).format(date)
 }
 
-export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate, initialDays }: AdminScheduleManagerProps) {
+function minutesToLabel(totalMinutes: number) {
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+function rangeLabel(startMinutes: number, durationMinutes: number) {
+  const end = startMinutes + durationMinutes
+  return `${minutesToLabel(startMinutes)} – ${minutesToLabel(end)}`
+}
+
+export function AdminScheduleManager({
+  adminKey,
+  initialSlots,
+  initialStartDate,
+  initialDays,
+  initialRecurringLocks,
+}: AdminScheduleManagerProps) {
   const [slots, setSlots] = useState<ScheduleSlot[]>(initialSlots)
   const [startDate, setStartDate] = useState(initialStartDate)
   const [daysShown, setDaysShown] = useState(initialDays)
@@ -52,6 +78,14 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<'lock' | 'unlock' | null>(null)
+  const [recurringLocks, setRecurringLocks] = useState<RecurringLock[]>(initialRecurringLocks)
+  const [recurringLoading, setRecurringLoading] = useState(false)
+  const [recurringForm, setRecurringForm] = useState({
+    weekday: 0,
+    startMinutes: dayStartMinutes,
+    durationMinutes: 60,
+    note: '',
+  })
 
   const slotsByDay = useMemo(() => {
     return slots.reduce<Record<string, ScheduleSlot[]>>((acc, slot) => {
@@ -77,6 +111,15 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
     )
   }, [slots])
 
+  const availableDurationOptions = useMemo(
+    () => durationOptions.filter((minutes) => recurringForm.startMinutes + minutes <= dayEndMinutes),
+    [recurringForm.startMinutes]
+  )
+
+  const orderedRecurringLocks = useMemo(() => {
+    return [...recurringLocks].sort((a, b) => a.weekday - b.weekday || a.startMinutes - b.startMinutes)
+  }, [recurringLocks])
+
   useEffect(() => {
     setLockSelection((prev) =>
       prev.filter((id) => {
@@ -87,7 +130,7 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
     setUnlockSelection((prev) =>
       prev.filter((id) => {
         const slot = slots.find((item) => item.id === id)
-        return slot?.status === 'locked'
+        return slot?.status === 'locked' && slot.lockType !== 'recurring'
       })
     )
   }, [slots])
@@ -109,15 +152,35 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
       }
       const data = (await res.json()) as { slots: ScheduleSlot[] }
       setSlots(data.slots)
+      const recurringRes = await fetch('/api/admin/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey,
+        },
+        body: JSON.stringify({ action: 'list-recurring' }),
+      })
+
+      if (recurringRes.ok) {
+        const recurringData = await recurringRes.json()
+        if (Array.isArray(recurringData.recurringLocks)) {
+          setRecurringLocks(recurringData.recurringLocks as RecurringLock[])
+        }
+      }
       setFeedback(null)
     } catch (error) {
       setFeedback({ type: 'error', message: (error as Error).message })
     } finally {
       setSlotsLoading(false)
     }
-  }, [daysShown, startDate])
+  }, [adminKey, daysShown, startDate])
 
   const handleSlotClick = (slot: ScheduleSlot) => {
+    if (slot.lockType === 'recurring') {
+      setFeedback({ type: 'error', message: 'Recurring locks are managed below. Remove them from the Weekly locks panel.' })
+      return
+    }
+
     if (slot.status === 'available') {
       setLockSelection((prev) => (prev.includes(slot.id) ? prev.filter((id) => id !== slot.id) : [...prev, slot.id]))
       setUnlockSelection((prev) => prev.filter((id) => id !== slot.id))
@@ -169,6 +232,62 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
   const selectedLockSlots = useMemo(() => slots.filter((slot) => lockSelection.includes(slot.id)), [lockSelection, slots])
   const selectedUnlockSlots = useMemo(() => slots.filter((slot) => unlockSelection.includes(slot.id)), [unlockSelection, slots])
 
+  const handleRecurringSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      setRecurringLoading(true)
+      const res = await fetch('/api/admin/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey,
+        },
+        body: JSON.stringify({ action: 'add-recurring', ...recurringForm }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create recurring lock.')
+      }
+
+      setRecurringLocks(data.recurringLocks as RecurringLock[])
+      setFeedback({ type: 'success', message: 'Recurring lock saved.' })
+      setRecurringForm((prev) => ({ ...prev, note: '' }))
+      await refreshSlots()
+    } catch (error) {
+      setFeedback({ type: 'error', message: (error as Error).message })
+    } finally {
+      setRecurringLoading(false)
+    }
+  }
+
+  const handleRecurringDelete = async (recurringLockId: string) => {
+    try {
+      setRecurringLoading(true)
+      const res = await fetch('/api/admin/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey,
+        },
+        body: JSON.stringify({ action: 'remove-recurring', recurringLockId }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to remove recurring lock.')
+      }
+
+      setRecurringLocks(data.recurringLocks as RecurringLock[])
+      setFeedback({ type: 'success', message: 'Recurring lock removed.' })
+      await refreshSlots()
+    } catch (error) {
+      setFeedback({ type: 'error', message: (error as Error).message })
+    } finally {
+      setRecurringLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-sm">
@@ -185,10 +304,11 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
             <p className="text-xs uppercase tracking-wide text-gray-500">Locked</p>
             <p className="text-lg font-semibold text-gray-900">{stats.locked}</p>
           </div>
-          <div className="ml-auto flex items-center gap-2 text-sm text-gray-600">
+          <div className="ml-auto flex flex-wrap items-center gap-3 text-sm text-gray-600">
             <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-white border" /> Free</span>
             <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-gray-300" /> Booked</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-amber-300" /> Locked</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-amber-300" /> Manual lock</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-purple-300" /> Recurring lock</span>
           </div>
         </div>
       </div>
@@ -261,17 +381,27 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
                           className={cn(
                             'w-full text-left px-4 py-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                             slot.status === 'booked' && 'bg-gray-100 text-gray-400 cursor-not-allowed',
-                            slot.status === 'locked' && 'bg-amber-50 text-amber-700',
+                            slot.status === 'locked' && slot.lockType !== 'recurring' && 'bg-amber-50 text-amber-700',
+                            slot.status === 'locked' && slot.lockType === 'recurring' && 'bg-purple-50 text-purple-700 cursor-not-allowed',
                             slot.status === 'available' && 'hover:bg-soft-blue-light/30 text-gray-800',
                             isSelectedForLock && 'ring-2 ring-soft-blue bg-soft-blue/20',
                             isSelectedForUnlock && 'ring-2 ring-amber-500'
                           )}
-                          disabled={slot.status === 'booked'}
+                          disabled={slot.status === 'booked' || slot.lockType === 'recurring'}
                         >
                           <p className="font-medium">
                             {formatTime(slotStart, timezone)} – {formatTime(slotEnd, timezone)}
                           </p>
-                          <p className="text-xs text-gray-600 capitalize">{slot.status}</p>
+                          <p className="text-xs text-gray-600 capitalize">
+                            {slot.status === 'locked'
+                              ? slot.lockType === 'recurring'
+                                ? 'Recurring lock'
+                                : 'Locked'
+                              : slot.status}
+                          </p>
+                          {slot.lockNote && (
+                            <p className="text-xs text-gray-500">{slot.lockNote}</p>
+                          )}
                         </button>
                       )
                     })}
@@ -281,7 +411,8 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
           </div>
         </div>
 
-        <div className="space-y-4 rounded-3xl border border-white/70 bg-white/90 p-5 shadow-lg">
+        <div className="space-y-4">
+          <div className="space-y-4 rounded-3xl border border-white/70 bg-white/90 p-5 shadow-lg">
           <div>
             <p className="text-sm font-semibold text-gray-900">Ready to lock</p>
             <p className="text-sm text-gray-600">{selectedLockSlots.length || 'None selected'}</p>
@@ -348,6 +479,116 @@ export function AdminScheduleManager({ adminKey, initialSlots, initialStartDate,
             >
               {actionLoading === 'unlock' ? 'Unlocking…' : 'Unlock selected slots'}
             </Button>
+          </div>
+          </div>
+
+          <div className="space-y-4 rounded-3xl border border-white/70 bg-white/90 p-5 shadow-lg">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Weekly locks</p>
+              <p className="text-sm text-gray-600">Automatically repeat blocks (e.g. Thursdays 19:00–20:00).</p>
+            </div>
+
+            <form className="space-y-3" onSubmit={handleRecurringSubmit}>
+              <label className="text-sm font-medium text-gray-700">
+                Weekday
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm bg-white"
+                  value={recurringForm.weekday}
+                  onChange={(event) =>
+                    setRecurringForm((prev) => ({ ...prev, weekday: Number(event.target.value) || 0 }))
+                  }
+                >
+                  {weekdayOptions.map((label, index) => (
+                    <option key={label} value={index}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-medium text-gray-700">
+                Start time
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm bg-white"
+                  value={recurringForm.startMinutes}
+                  onChange={(event) => {
+                    const value = Number(event.target.value)
+                    setRecurringForm((prev) => {
+                      const updated = { ...prev, startMinutes: value }
+                      if (updated.startMinutes + updated.durationMinutes > dayEndMinutes) {
+                        updated.durationMinutes = SCHEDULE_SLOT_MINUTES
+                      }
+                      return updated
+                    })
+                  }}
+                >
+                  {timeOptions.map((minutes) => (
+                    <option key={minutes} value={minutes}>
+                      {minutesToLabel(minutes)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-medium text-gray-700">
+                Duration
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm bg-white"
+                  value={recurringForm.durationMinutes}
+                  onChange={(event) =>
+                    setRecurringForm((prev) => ({ ...prev, durationMinutes: Number(event.target.value) || SCHEDULE_SLOT_MINUTES }))
+                  }
+                >
+                  {availableDurationOptions.map((minutes) => (
+                    <option key={minutes} value={minutes}>
+                      {minutes} min ({rangeLabel(recurringForm.startMinutes, minutes)})
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-medium text-gray-700">
+                Internal note (optional)
+                <textarea
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  rows={2}
+                  placeholder="Blocked for lessons, commute, etc."
+                  value={recurringForm.note}
+                  onChange={(event) => setRecurringForm((prev) => ({ ...prev, note: event.target.value }))}
+                />
+              </label>
+
+              <Button type="submit" className="w-full rounded-2xl bg-soft-blue text-white" disabled={recurringLoading}>
+                {recurringLoading ? 'Saving…' : 'Save weekly lock'}
+              </Button>
+            </form>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto">
+              {orderedRecurringLocks.length === 0 ? (
+                <p className="text-sm text-gray-600">No recurring locks yet.</p>
+              ) : (
+                orderedRecurringLocks.map((lock) => (
+                  <div key={lock.id} className="flex items-start justify-between gap-3 rounded-2xl border border-gray-100 px-3 py-2">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {weekdayOptions[lock.weekday]} · {rangeLabel(lock.startMinutes, lock.durationMinutes)}
+                      </p>
+                      {lock.note && <p className="text-xs text-gray-600">{lock.note}</p>}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl border-gray-200 text-gray-700"
+                      onClick={() => handleRecurringDelete(lock.id)}
+                      disabled={recurringLoading}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
