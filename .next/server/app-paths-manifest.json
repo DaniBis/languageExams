@@ -1,17 +1,3 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin/schedule/page": "app/admin/schedule/page.js",
-  "/about/page": "app/about/page.js",
-  "/api/admin/schedule/route": "app/api/admin/schedule/route.js",
-  "/api/next-lesson/route": "app/api/next-lesson/route.js",
-  "/api/schedule/route": "app/api/schedule/route.js",
-  "/api/contact/route": "app/api/contact/route.js",
-  "/book/page": "app/book/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/cambridge/page": "app/cambridge/page.js",
-  "/general-english/page": "app/general-english/page.js",
-  "/ielts/page": "app/ielts/page.js",
-  "/page": "app/page.js",
-  "/prices/page": "app/prices/page.js",
-  "/reviews/page": "app/reviews/page.js"
+  "/admin/schedule/page": "app/admin/schedule/page.js"
 }
